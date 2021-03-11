@@ -44,10 +44,10 @@ POSTGRES_CONNECTION_STRING=Server=127.0.0.1;Port=5432;Database=your_database_nam
 You will need to change your_database_name according to which folder the file is in (e.g. TestDb for the ShipItTest folder), and change the User Id and Password to the correct credentials. It would be wise to add these `.env` files to your `.gitignore` so that you don't share your password by committing these files to Github!
 
 ## Running The API
-Once set up, simply run dotnet run in the ShipIt directory.
+Once set up, simply run `dotnet run` in the ShipIt directory.
 
 ## Running The Tests
-To run the tests you should be able to run dotnet test in the ShipItTests directory.
+To run the tests you should be able to run `dotnet test` in the ShipItTests directory.
 
 ## Deploying to Production
 TODO
