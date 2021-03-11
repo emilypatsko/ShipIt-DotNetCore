@@ -94,6 +94,15 @@ namespace ShipIt.Controllers
             }
 
             _stockRepository.RemoveStock(request.WarehouseId, lineItems);
+
+            // Thinking we'll only hit this code if no errors have been thrown up in any of the previous bits!
+            // Assuming that the order of items is the same in order lines and products keys
+            double totalWeight = 0;
+            for (var i = 0; i < orderLines.Count; i++) 
+            {
+                totalWeight += orderLines[i].quantity * products[orderLines[i].gtin].Weight;
+            }
+            var numTrucks = Math.Ceiling((totalWeight/1000)/2000);
         }
     }
 }
