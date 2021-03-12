@@ -39,9 +39,16 @@ namespace ShipIt.Controllers
             var allStock = _stockRepository.GetStockByWarehouseId(warehouseId);
 
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
+            
+            // extract products by stock.productid here so we can take that database call out of the loop
+            var ids = allStock.Select(s => s.ProductId).ToList();
+            var productDataModels = _productRepository.GetProductsById(ids);
+            var products = productDataModels.ToDictionary(p => p.Id, p => new Product(p));
+           
             foreach (var stock in allStock)
             {
-                Product product = new Product(_productRepository.GetProductById(stock.ProductId));
+                // Product product = new Product(_productRepository.GetProductById(stock.ProductId));
+                Product product = products[stock.ProductId];
                 if(stock.held < product.LowerThreshold && !product.Discontinued)
                 {
                     Company company = new Company(_companyRepository.GetCompany(product.Gcp));
