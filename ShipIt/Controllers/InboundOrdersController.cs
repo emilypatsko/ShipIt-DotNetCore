@@ -36,7 +36,7 @@ namespace ShipIt.Controllers
 
             Log.Debug(String.Format("Found operations manager: {0}", operationsManager));
 
-            var allStock = _stockRepository.GetStockByWarehouseId(warehouseId);
+            var allStock = _stockRepository.GetStockByWarehouseId(warehouseId); 
 
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
             
@@ -44,6 +44,12 @@ namespace ShipIt.Controllers
             var ids = allStock.Select(s => s.ProductId).ToList();
             var productDataModels = _productRepository.GetProductsById(ids);
             var products = productDataModels.ToDictionary(p => p.Id, p => new Product(p));
+
+            // var companies = products.Values.Select(p => p.Gcp).ToList();
+            // var companyDataModels = _companyRepository.GetCompanies(companies);
+            // not sure if there could be duplicates in this companies list     
+
+            // var productsToRestock = _stockRepository.GetProductsToRestock(warehouseId);       
            
             foreach (var stock in allStock)
             {

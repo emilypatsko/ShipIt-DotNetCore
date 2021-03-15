@@ -15,6 +15,8 @@ namespace ShipIt.Repositories
         int GetStockHeldSum();
         IEnumerable<StockDataModel> GetStockByWarehouseId(int id);
         Dictionary<int, StockDataModel> GetStockByWarehouseAndProductIds(int warehouseId, List<int> productIds);
+        // shouldn't be a void, but what to return???????
+        void GetProductsToRestock(int warehouseId);
         void RemoveStock(int warehouseId, List<StockAlteration> lineItems);
         void AddStock(int warehouseId, List<StockAlteration> lineItems);
     }
@@ -59,7 +61,15 @@ namespace ShipIt.Repositories
             var stock = base.RunGetQuery(sql, reader => new StockDataModel(reader), noProductWithIdErrorMessage, parameter);
             return stock.ToDictionary(s => s.ProductId, s => s);
         }
-            
+
+        public void GetProductsToRestock(int warehouseId) {
+            string sql = "SELECT * FROM gtin " +
+                         "INNER JOIN stock ON gtin.p_id = stock.p_id " +
+                         "INNER JOIN gcp ON gtin.gcp_cd = gcp.gcp_cd " +
+                         "WHERE w_id = @w_id AND hld < l_th AND ds = 0";  
+            var parameter = new NpgsqlParameter("@w_id", warehouseId);
+            // return base.RunGetQuery(sql, reader => new StockDataModel(reader), noProductWithIdErrorMessage, parameter).ToList();
+        }    
         public void AddStock(int warehouseId, List<StockAlteration> lineItems)
         {
             var parametersList = new List<NpgsqlParameter[]>();

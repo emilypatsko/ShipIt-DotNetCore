@@ -91,7 +91,7 @@ namespace ShipIt.Repositories
             return base.RunGetQuery(sql, reader => new EmployeeDataModel(reader), noProductWithIdErrorMessage, parameter);
         }
 
-        public EmployeeDataModel GetOperationsManager(int warehouseId)
+        public EmployeeDataModel GetOperationsManager(int warehouseId) 
         {
 
             string sql = "SELECT name, w_id, role, ext FROM em WHERE w_id = @w_id AND role = @role";
