@@ -36,45 +36,73 @@ namespace ShipIt.Controllers
 
             Log.Debug(String.Format("Found operations manager: {0}", operationsManager));
 
-            var allStock = _stockRepository.GetStockByWarehouseId(warehouseId); 
+            // var allStock = _stockRepository.GetStockByWarehouseId(warehouseId); 
 
             Dictionary<Company, List<InboundOrderLine>> orderlinesByCompany = new Dictionary<Company, List<InboundOrderLine>>();
             
             // extract products by stock.productid here so we can take that database call out of the loop
-            var ids = allStock.Select(s => s.ProductId).ToList();
-            var productDataModels = _productRepository.GetProductsById(ids);
-            var products = productDataModels.ToDictionary(p => p.Id, p => new Product(p));
+            // var ids = allStock.Select(s => s.ProductId).ToList();
+            // var productDataModels = _productRepository.GetProductsById(ids);
+            // var products = productDataModels.ToDictionary(p => p.Id, p => new Product(p));
 
             // var companies = products.Values.Select(p => p.Gcp).ToList();
             // var companyDataModels = _companyRepository.GetCompanies(companies);
             // not sure if there could be duplicates in this companies list     
 
-            // var productsToRestock = _stockRepository.GetProductsToRestock(warehouseId);       
-           
-            foreach (var stock in allStock)
+            var productsToRestock = _stockRepository.GetProductsToRestock(warehouseId);      
+
+            foreach (var product in productsToRestock)
             {
-                // Product product = new Product(_productRepository.GetProductById(stock.ProductId));
-                Product product = products[stock.ProductId];
-                if(stock.held < product.LowerThreshold && !product.Discontinued)
+                var orderQuantity = Math.Max(product.LowerThreshold * 3 - product.held, product.MinimumOrderQuantity);
+
+                Company company = new Company();
+                company.Gcp = product.Gcp;
+                company.Addr2 = product.Addr2;
+                company.Addr3 = product.Addr3;
+                company.Addr4 = product.Addr4;
+                company.PostalCode = product.PostalCode;
+                company.City = product.City;
+                company.Tel = product.Tel;
+                company.Mail = product.Mail;
+
+                if (!orderlinesByCompany.ContainsKey(company))
                 {
-                    Company company = new Company(_companyRepository.GetCompany(product.Gcp));
-
-                    var orderQuantity = Math.Max(product.LowerThreshold * 3 - stock.held, product.MinimumOrderQuantity);
-
-                    if (!orderlinesByCompany.ContainsKey(company))
-                    {
-                        orderlinesByCompany.Add(company, new List<InboundOrderLine>());
-                    }
-
-                    orderlinesByCompany[company].Add( 
-                        new InboundOrderLine()
-                        {
-                            gtin = product.Gtin,
-                            name = product.Name,
-                            quantity = orderQuantity
-                        });
+                    orderlinesByCompany.Add(company, new List<InboundOrderLine>());
                 }
-            }
+
+                orderlinesByCompany[company].Add( 
+                    new InboundOrderLine()
+                    {
+                        gtin = product.Gtin,
+                        name = product.Name,
+                        quantity = orderQuantity
+                    });
+            } 
+           
+            // foreach (var stock in allStock)
+            // {
+            //     // Product product = new Product(_productRepository.GetProductById(stock.ProductId));
+            //     Product product = products[stock.ProductId];
+            //     if(stock.held < product.LowerThreshold && !product.Discontinued)
+            //     {
+            //         Company company = new Company(_companyRepository.GetCompany(product.Gcp));
+
+            //         var orderQuantity = Math.Max(product.LowerThreshold * 3 - stock.held, product.MinimumOrderQuantity);
+
+            //         if (!orderlinesByCompany.ContainsKey(company))
+            //         {
+            //             orderlinesByCompany.Add(company, new List<InboundOrderLine>());
+            //         }
+
+            //         orderlinesByCompany[company].Add( 
+            //             new InboundOrderLine()
+            //             {
+            //                 gtin = product.Gtin,
+            //                 name = product.Name,
+            //                 quantity = orderQuantity
+            //             });
+            //     }
+            // }
 
             Log.Debug(String.Format("Constructed order lines: {0}", orderlinesByCompany));
 
